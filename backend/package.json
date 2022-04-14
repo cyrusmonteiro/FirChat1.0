@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "farzi backend",
+  "main": "index.js",
+  "author": "Cyrus Monteiro",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "farzi-whatsapp",
+  "version": "1.0.0",
+  "description": "feeling bdsm with 3 others",
+  "main": "index.js",
+  "repository": "https://github.com/cyrusmonteiro/FarziWhatsapp.git",
+  "author": "cyrusmonteiro <cyrus20368@iiitd.ac.in>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}
