@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <link rel="stylesheet" href="/index.css" />
+    <script src='/socket.io.js'></script>
+  </head>
+
+  <body>
+
+    
+
+
+    <div id="maingrid">
+
+      <!-- profile -->
+      <div id="prof" style=" display: none">
+      </div> 
+
+      <!-- contacts -->
+      <div id="contacts">
+        <button id="profile" onclick="profileHandler(event)">My Profile</button>
+      </div>
+
+
+      <!-- Login -->
+      <form id="login-form" onsubmit="loginHandler(event)">
+        <label for="username">Username</label>
+        <input name="username" type="text"/> <br>
+        <label for="password">Password</label>
+        <input name="password" type="password"/>
+        <input type="submit" value="Login"/>
+      </form>
+      
+
+      <!--Messages-->
+      <div id="chat-app">
+        <ul id="messages"></ul>
+        <form id="chat-form" action="">
+          <input id="input" autocomplete="off" /><button >Send</button>
+        </form>
+      </div>
+      <script src="/index.js"></script>
+    </div>
+  </body>
+
+</html>

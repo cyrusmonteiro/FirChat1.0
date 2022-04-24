@@ -10,5 +10,10 @@
   "workspaces": [
     "frontend",
     "backend"
-  ]
+  ],
+  
+  "scripts":{
+    "server": "yarn --cwd backend start",
+    "dev-server": "yarn --cwd backend dev"
+  }
 }
