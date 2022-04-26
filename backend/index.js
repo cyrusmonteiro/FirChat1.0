@@ -63,10 +63,11 @@ io.on('connection', (socket) => {
       }
     }
     console.log(p);
-      
-    var query=`UPDATE whatsapp2.user_status SET OnlineStatus = 0, LastSeen = current_timestamp() WHERE USER_MobileNumber = ${p};`;
-    asyncQuery(query);
-    console.log('user disconnected');
+    if(p!=undefined){
+      var query=`UPDATE whatsapp2.user_status SET OnlineStatus = 0, LastSeen = current_timestamp() WHERE USER_MobileNumber = ${p};`;
+      asyncQuery(query);
+      console.log('user disconnected');
+    }
 
   });
 
@@ -83,9 +84,9 @@ io.on('connection', (socket) => {
 
   
   socket.on('register',async userObject=>{
- 
-    
-  
+    var query=`INSERT INTO whatsapp2.user (Username, MobileNumber, Status, Display) VALUES ('${userObject.Username}' , ${userObject.MobileNumber}, '${userObject.Status}', '${userObject.Password}');`;
+    await asyncQuery(query);
+
   });
 
   
@@ -171,6 +172,13 @@ io.on('connection', (socket) => {
     
     //console.log(groupData);
     socket.emit('messageIDs', message);
+  });
+
+  //Update online status
+  socket.on('update profile', async (status,number) => {
+    console.log(status);
+    var query=`Update settings set privacystatus='${status}' where user_mobilenumber=${number};`;
+    await asyncQuery(query);
   });
 
 })

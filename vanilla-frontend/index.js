@@ -86,6 +86,7 @@ function registerHandler(event){
     }
     console.log(userObject);
     socket.emit('register', userObject);
+    socket.emit('login', mobileNumber);
 
     loginGrid.style.display = 'none';
     registerForm.style.display = 'none';
@@ -159,11 +160,25 @@ function showProfile(profile) {
     //document.getElementById('maingrid').appendChild(profileElement);
 }
 
-function openSettings() {
+function openSettings(event) {
+    event.preventDefault();
     console.log('open settings');
-    profileElement.style.display = 'none';
-    chatApp.style.display = 'none';
-    document.getElementById('settings').style.display = 'block';
+    //profileElement.style.display = 'none';
+    //chatApp.style.display = 'none';
+    profileElement.innerHTML = `Update Privacy Settings
+    <button onclick="updateSettings(event, ('Normal'))">Normal</button>
+    <button onclick="updateSettings(event, ('Private'))">Private</button>
+    <button onclick="updateSettings(event, ('Restricted'))">Restricted</button>
+    <button onclick="closeProfile()">Close</button>
+    `;
+
+}
+
+function updateSettings(event, status) {
+    event.preventDefault();
+    console.log('updated',status);
+    socket.emit('update profile', status,p_number);
+    profileElement.innerHTML = `Updated to ${status} <br> <button onclick="closeProfile()">Close</button> <button id="profile" onclick="profileHandler(event)">Back to Profile</button>`;
 }
 
 function closeProfile() {
