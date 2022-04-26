@@ -2,8 +2,8 @@ body {
     margin: 0;
     padding-bottom: 3rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: #f1f1f1;
-    background-color: #424242;
+    color: green;
+    background-color: #e5f6df;
 }
 
 #chat-form {
@@ -55,7 +55,7 @@ body {
 }
 
 #messages > li:nth-child(odd) {
-    background: #303030;
+    background: #90ee91;
 }
 
 #chat-app {
@@ -69,17 +69,16 @@ body {
 
 #contacts {
     text-align: center;
-
+    display: none;
     grid-column-start: 2;
     padding: 5%;
     grid-row-start: 1;
-    background-color: #212121;
+    background-color: #caeec2;
     list-style: none;
 
 }
 
-button {
-    /* place at bottom of div */
+/* button {
     background-color: #000000;
     padding: 1rem;
     border-radius: 5px;
@@ -88,7 +87,7 @@ button {
     font-weight: bold;
     text-align: center;
     cursor: pointer;
-}
+} */
 
 #contacts > li {
     padding: 0.5rem 1rem;
@@ -132,6 +131,71 @@ button {
 }
 
 .profile-container {
-    padding-left: 2rem;
+    margin: 2%;
+    /* padding-left: 2rem; */
     text-align: center;
+}
+
+#login-grid{
+    background: green;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+
+
+button {
+
+    margin: 0.5rem;
+    height: 4rem;
+    width: 10rem;
+    background-color: #c2fbd7;
+    border-radius: 100px;
+    box-shadow: rgba(44, 187, 99, .2) 0 -25px 18px -14px inset,rgba(44, 187, 99, .15) 0 1px 2px,rgba(44, 187, 99, .15) 0 2px 4px,rgba(44, 187, 99, .15) 0 4px 8px,rgba(44, 187, 99, .15) 0 8px 16px,rgba(44, 187, 99, .15) 0 16px 32px;
+    color: green;
+    cursor: pointer;
+    display: inline-block;
+    font-family: CerebriSans-Regular,-apple-system,system-ui,Roboto,sans-serif;
+    padding: 7px 20px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 250ms;
+    border: 0;
+    font-size: 16px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    }
+
+button:hover {
+    box-shadow: rgba(44,187,99,.35) 0 -25px 18px -14px inset,rgba(44,187,99,.25) 0 1px 2px,rgba(44,187,99,.25) 0 2px 4px,rgba(44,187,99,.25) 0 4px 8px,rgba(44,187,99,.25) 0 8px 16px,rgba(44,187,99,.25) 0 16px 32px;
+    transform: scale(1.05) rotate(-1deg);
+}
+
+#login-form {
+    display: none;
+}
+
+#register-form {
+    display: none;
+}
+
+#circle {
+    border-radius:50% 50% 50% 50%;  
+    width:100px;
+    height:100px;
+}
+
+#prof {
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+#send-button {
+    height: 75%;
 }

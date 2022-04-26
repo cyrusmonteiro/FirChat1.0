@@ -6,6 +6,7 @@ var mysql = require('mysql2');
 
 
 //mysql connection
+var onlineUsers = [];
 var con = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
@@ -36,7 +37,18 @@ const io = new socketio.Server(httpServer);
 
 var messages = [];
 
+function asyncQuery(query) {
+  return new Promise((resolve, reject) => {
+    con.query(query, function (err, result, fields) {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
+}
+
 io.on('connection', (socket) => {
+
+
   console.log("Someone connected, socket id: " + socket.id);
 
   //
@@ -44,7 +56,18 @@ io.on('connection', (socket) => {
   //
 
   socket.on('disconnect', () => {
+    var p;
+    for(var i=0;i<onlineUsers.length;i++){
+      if(onlineUsers[i].id==socket.id){
+        p=onlineUsers[i].p_number;
+      }
+    }
+    console.log(p);
+      
+    var query=`UPDATE whatsapp2.user_status SET OnlineStatus = 0, LastSeen = current_timestamp() WHERE USER_MobileNumber = ${p};`;
+    asyncQuery(query);
     console.log('user disconnected');
+
   });
 
 
@@ -54,13 +77,22 @@ io.on('connection', (socket) => {
   socket.on('chat message', message => {
     message.Message_ID=0;
     socket.broadcast.emit('chat message', message);
+    console.log(message);
     messages.push(message);
   })
 
   
+  socket.on('register',async userObject=>{
+ 
+    
+  
+  });
 
-
+  
   socket.on('login',async  p_number => {
+    //update to online
+    var query=`UPDATE whatsapp2.user_status SET OnlineStatus = 1, LastSeen = current_timestamp() WHERE USER_MobileNumber = ${p_number};`;
+    await asyncQuery(query);
 
     // //contacts
     // var contacts;
@@ -74,6 +106,14 @@ io.on('connection', (socket) => {
     // });
 
 
+    userDet={
+      id : socket.id,
+      p_number : p_number
+    }
+    console.log(userDet);
+    onlineUsers.push(userDet);
+    console.log(onlineUsers);
+
     //profile details
     var profile;
     var query=`select * from user where MobileNumber=${p_number}`;
@@ -84,14 +124,14 @@ io.on('connection', (socket) => {
     var conversations;
     var query=`SELECT CONVERSATION_Conversation_ID FROM whatsapp2.user_ismember_conversation WHERE USER_MobileNumber = ${p_number}`;
     conversations = await asyncQuery(query);
-    console.log(conversations);
+    //console.log(conversations);
     socket.emit('conversations', conversations);
 
     //list of messages in each conversation
     
     var query='select * from message';
     messages = await asyncQuery(query);
-    console.log(messages);
+    //console.log(messages);
     socket.emit('m', messages);
 
 
@@ -103,14 +143,7 @@ io.on('connection', (socket) => {
   console.log("query promised")
   });
 
-  function asyncQuery(query) {
-    return new Promise((resolve, reject) => {
-      con.query(query, function (err, result, fields) {
-        if (err) return reject(err);
-        resolve(result);
-      });
-    });
-  }
+
 
   socket.on('getGroup', async conversations=> {
     var groupData=[];
@@ -119,7 +152,6 @@ io.on('connection', (socket) => {
       var query=`SELECT * FROM whatsapp2.group_ WHERE CONVERSATION_Conversation_ID = ${conversations[i].CONVERSATION_Conversation_ID};`;
       const result = await asyncQuery(query);
       group=result;
-      console.log(group);
       groupData.push(group[0]);
     }
     //console.log(groupData);
@@ -127,14 +159,14 @@ io.on('connection', (socket) => {
   });
 
   socket.on('getMessageIDs', async mID=> {
-    console.log(mID);
+    //console.log(mID);
    // var messageIDs=[];
     var message;
     var query=`SELECT whatsapp2.sends.MESSAGE_Message_ID FROM whatsapp2.sends INNER JOIN whatsapp2.message on message.message_ID= sends.message_Message_ID where CONVERSATION_Conversation_ID = ${mID};`;
     const result = await asyncQuery(query);
     message=result;
-    console.log(11);
-    console.log(message);
+    //console.log(11);
+    //console.log(message);
    // messageIDs.push(message);
     
     //console.log(groupData);

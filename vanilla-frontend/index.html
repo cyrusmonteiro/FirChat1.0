@@ -23,21 +23,38 @@
       </div>
 
 
-      <!-- Login -->
-      <form id="login-form" onsubmit="loginHandler(event)">
-        <label for="username">Username</label>
-        <input name="username" type="text"/> <br>
-        <label for="password">Password</label>
-        <input name="password" type="password"/>
-        <input type="submit" value="Login"/>
-      </form>
+      <!-- Initial grid -->
+      <div id="login-grid">
+        <div id="entryButtons">
+          <button class="homeButtons" onclick="showLogin(event)">Login</button>
+          <button class="homeButtons" onclick="showRegister(event)">Register</button>
+        </div>
+        <form id="login-form" onsubmit="loginHandler(event)">
+          <label for="p_number">PhoneNumber</label>
+          <input name="p_number" type="text"/> <br>
+          <label for="password">Password</label>
+          <input name="password" type="password"/>
+          <input type="submit" value="Login"/>
+        </form>
+        <form id="register-form" onsubmit="registerHandler(event)">
+          <label for="username">Name</label>
+          <input name="username" type="text"/> <br>
+          <label for="p_number">PhoneNumber</label>
+          <input name="p_number" type="text"/> <br>
+          <label for="password">Password</label>
+          <input name="password" type="password"/>
+          <label for="status">Status</label>
+          <input name="status" type="text"/> <br>
+          <input type="submit" value="Register"/>
+        </form>
+      </div>
       
 
       <!--Messages-->
       <div id="chat-app">
         <ul id="messages"></ul>
         <form id="chat-form" action="">
-          <input id="input" autocomplete="off" /><button >Send</button>
+          <input id="input" autocomplete="off" /><button id="send-button">Send</button>
         </form>
       </div>
       <script src="/index.js"></script>

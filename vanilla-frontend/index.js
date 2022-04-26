@@ -2,6 +2,9 @@ var socket = io()
 const chatForm = document.getElementById('chat-form');
 const chatApp = document.getElementById('chat-app');
 const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const entryButtons = document.getElementById('entryButtons');
+const loginGrid=document.getElementById('login-grid');
 const input = document.getElementById('input');
 const messagesList = document.getElementById('messages');
 const contactList = document.getElementById('contacts');
@@ -14,6 +17,7 @@ var groupData=[];
 var p_number;
 var profile_of_user;
 var currentPerson;
+var currentc_number;
 
 function showMessage(message) {
     const messageElement = document.createElement('li');
@@ -36,6 +40,7 @@ chatForm.addEventListener('submit', (event) => {
         Message_ID: '-1',
         Message_body: input.value,
         Messaage_type: 'DOCS',
+        c_number: currentc_number,
     }
     socket.emit('chat message', messageObject);
     messages.push(messageObject);
@@ -56,17 +61,56 @@ socket.on('connect', () => {
 })
 
 
+function showLogin(event) {
+    event.preventDefault();
+    loginForm.style.display = 'block';
+    entryButtons.style.display = 'none';
+}
+function showRegister(event) {
+    event.preventDefault();
+    registerForm.style.display = 'block';
+    entryButtons.style.display = 'none';
+}
+
+function registerHandler(event){
+    event.preventDefault();
+    var username=event.target.username.value;
+    var mobileNumber=event.target.p_number.value;
+    var password=event.target.password.value;
+    var status=event.target.status.value;
+    var userObject={
+        Username:username,
+        MobileNumber:mobileNumber,
+        Password:password,
+        Status:status
+    }
+    console.log(userObject);
+    socket.emit('register', userObject);
+
+    loginGrid.style.display = 'none';
+    registerForm.style.display = 'none';
+    contactList.style.display = 'block';
+    chatApp.style.display = 'grid';
+    chatApp.scrollTo(0, chatApp.scrollHeight);
+    chatApp.style.display = 'none';
+
+}
+
+
+
 function loginHandler(event) {
     event.preventDefault();
     
-    p_number=event.target.username.value;
-    console.log(event.target.username.value);
+    p_number=event.target.p_number.value;
+    console.log(event.target.p_number.value);
 
     socket.emit('login', p_number);
 
     
 
+    loginGrid.style.display = 'none';
     loginForm.style.display = 'none';
+    contactList.style.display = 'block';
     chatApp.style.display = 'grid';
     chatApp.scrollTo(0, chatApp.scrollHeight);
     chatApp.style.display = 'none';
@@ -83,7 +127,7 @@ function loginHandler(event) {
 //recieve profile details
 
 socket.on('profile', profile => {
-    //console.log(profile);
+    console.log(profile);
     profile_of_user=profile;
 })
 
@@ -94,16 +138,17 @@ function profileHandler(event) {
 
 function showProfile(profile) {
     
-    profileElement.style.display = 'block';
+    profileElement.style.display = 'flex';
     profileElement.innerHTML = `
         <div class="profile-container">
             <div class="profile-image">
-                <img src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
+                <img src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar" id="circle">
             </div>
             <div class="profile-details">
                 <div class="profile-name">Name: ${profile[0].Username}</div>
                 <div class="profile-number">Phone Number: ${profile[0].MobileNumber}</div>
                 <div class="profile-email">Status: ${profile[0].Status}</div>
+                <button onclick="openSettings(event)">Settings</button>
                 <br>
             </div>
             <button id="close-profile" onclick="closeProfile()">Close Profile</button>
@@ -112,6 +157,13 @@ function showProfile(profile) {
     chatApp.style.display='none';
 
     //document.getElementById('maingrid').appendChild(profileElement);
+}
+
+function openSettings() {
+    console.log('open settings');
+    profileElement.style.display = 'none';
+    chatApp.style.display = 'none';
+    document.getElementById('settings').style.display = 'block';
 }
 
 function closeProfile() {
@@ -164,6 +216,7 @@ socket.on('group', group => {
         contact.style.cursor = 'pointer';
         contact.addEventListener('click', function() {            
             chatApp.style.display = 'grid';
+            currentc_number=groupData[i].CONVERSATION_Conversation_ID;
             currentPerson=groupData[i].Name;
             showX(groupData[i])
         })
