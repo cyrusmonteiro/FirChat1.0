@@ -39,9 +39,10 @@ chatForm.addEventListener('submit', (event) => {
         const messageObject = {
             Message_ID: '-1',
             Message_body: input.value,
-            Messaage_type: 'DOCS',
+            Message_type: 'DOCS',
             c_number: currentc_number,
-            sender: p_number
+            sender: p_number,
+            isForwarded: 0
         }
         socket.emit('chat message', messageObject,currentc_number);
         messages.push(messageObject);
@@ -54,8 +55,11 @@ chatForm.addEventListener('submit', (event) => {
 
 socket.on('chat message', (messageObject) => {
     if(messageObject.sender!=p_number){
-        messages.push(messageObject);
-        showMessage(messageObject);
+        if(messageObject.c_number==currentc_number){
+
+            messages.push(messageObject);
+            showMessage(messageObject);
+        }
     }
 })
 
@@ -261,6 +265,8 @@ socket.on('m', m => {
 socket.on('messageIDs', messageIDs => {
     //loop for messages
     messagesList.innerHTML = '';
+    messageIDs.sort(function(a,b){return new Date(a.MESSAGE_Message_ID) - new Date(b.MESSAGE_Message_ID)});
+    //messageIDs.sort();
     console.log(messageIDs);
     for(let i=0; i<messageIDs.length; i++){
         for(let j=0; j<messages.length; j++){
