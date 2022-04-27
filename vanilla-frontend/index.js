@@ -10,7 +10,7 @@ const messagesList = document.getElementById('messages');
 const contactList = document.getElementById('contacts');
 const profileElement = document.getElementById('prof');
 
-const messages = [];
+var messages = [];
 var listOfContacts = [];
 var userConversations=[];
 var groupData=[];
@@ -35,25 +35,28 @@ function showMessage(message) {
 chatForm.addEventListener('submit', (event) => {
     event.preventDefault();
 
-
-    const messageObject = {
-        Message_ID: '-1',
-        Message_body: input.value,
-        Messaage_type: 'DOCS',
-        c_number: currentc_number,
+    if(input.vali!=''){
+        const messageObject = {
+            Message_ID: '-1',
+            Message_body: input.value,
+            Messaage_type: 'DOCS',
+            c_number: currentc_number,
+            sender: p_number
+        }
+        socket.emit('chat message', messageObject,currentc_number);
+        messages.push(messageObject);
+        showMessage(messageObject);
+        input.value = '';
     }
-    socket.emit('chat message', messageObject);
-    messages.push(messageObject);
-
-    showMessage(messageObject);
-    input.value = '';
+    
 })
 
 
 socket.on('chat message', (messageObject) => {
-    showMessage(messageObject);
-    console.log(messageObject);
-    messages.push(messageObject);
+    if(messageObject.sender!=p_number){
+        messages.push(messageObject);
+        showMessage(messageObject);
+    }
 })
 
 socket.on('connect', () => {
@@ -229,7 +232,8 @@ socket.on('group', group => {
         console.log(12)
         contact = document.createElement('li');
         contact.style.cursor = 'pointer';
-        contact.addEventListener('click', function() {            
+        contact.addEventListener('click', function() {  
+            socket.emit('mm',p_number);          
             chatApp.style.display = 'grid';
             currentc_number=groupData[i].CONVERSATION_Conversation_ID;
             currentPerson=groupData[i].Name;
@@ -249,8 +253,9 @@ function showX(arg) {
 
 socket.on('m', m => {
     console.log(m);
+    messages=[];
     messages.push(...m);
-    m.forEach(showMessage);
+    //m.forEach(showMessage);
 })
 
 socket.on('messageIDs', messageIDs => {

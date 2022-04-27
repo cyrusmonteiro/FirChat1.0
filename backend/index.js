@@ -3,6 +3,7 @@ const express = require('express');
 const socketio = require('socket.io');
 const path = require('path');
 var mysql = require('mysql2');
+const { emit } = require('process');
 
 
 //mysql connection
@@ -75,10 +76,19 @@ io.on('connection', (socket) => {
 
 
 
-  socket.on('chat message', message => {
+  socket.on('chat message', async (message,c_no) => {
     message.Message_ID=0;
-    socket.broadcast.emit('chat message', message);
-    console.log(message);
+    // socket.broadcast.emit('chat message', message);
+    var query=`SELECT USER_MobileNumber FROM whatsapp2.user_ismember_conversation WHERE CONVERSATION_Conversation_ID = ${c_no};`;
+    var users_of_con=await asyncQuery(query);
+    console.log(users_of_con);
+    
+    for(var i=0;i<users_of_con.length;i++)
+      for(var j=0;j<onlineUsers.length;j++)
+        if(users_of_con[i].USER_MobileNumber==onlineUsers[j].p_number){
+          console.log(15);
+          io.to(onlineUsers[j].id).emit('chat message', message);
+        }
     messages.push(message);
   })
 
@@ -145,7 +155,14 @@ io.on('connection', (socket) => {
   });
 
 
-
+  socket.on('mm', async x=>{
+    var query='select * from message';
+    messages = await asyncQuery(query);
+    //console.log(messages);
+    socket.emit('m', messages);
+  })
+  
+  
   socket.on('getGroup', async conversations=> {
     var groupData=[];
     for(let i=0;i<conversations.length;i++){
@@ -183,6 +200,12 @@ io.on('connection', (socket) => {
 
 })
 
+async function getUsersOfConversation (c_no){
+  var users_of_con=[];
+  var query=`SELECT USER_MobileNumber FROM whatsapp2.user_ismember_conversation WHERE CONVERSATION_Conversation_ID = ${c_no};`;
+  users_of_con=await asyncQuery(query);
+  return users_of_con;
+}
 
 
 // app.use(express.static(path.join(__dirname, 'static')));
