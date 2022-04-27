@@ -159,6 +159,39 @@ io.on('connection', (socket) => {
     console.log(conversations);
     socket.emit('conversations', conversations);
 
+    //return online status of conversations
+    var online_status=[];
+    for(var i=0;i<conversations.length;i++){
+      var query=`Select user_ismember_conversation.USER_MobileNumber, user_status.OnlineStatus, user_status.LastSeen  
+      FROM user_ismember_conversation INNER JOIN user_status ON user_status.USER_MobileNumber = user_ismember_conversation.USER_MobileNumber
+      WHERE CONVERSATION_Conversation_ID = ${conversations[i].CONVERSATION_Conversation_ID};`;
+      var result = await asyncQuery(query);
+      online_status.push(result);
+    }
+
+
+    for(var i=0;i<online_status.length;i++){
+      for(var j=0;j<online_status[i].length;j++){
+        var query=`SELECT PrivacyStatus from whatsapp3.settings where USER_MobileNumber = ${online_status[i][j].USER_MobileNumber};`;
+        console.log(online_status[i][j].USER_MobileNumber);
+        var result = await asyncQuery(query);
+        console.log(result);
+        //if error continue
+        if(result.length==0)
+          continue;
+        if(result[0].PrivacyStatus=='Private'){
+          online_status[i][j].OnlineStatus='Private';
+          online_status[i][j].LastSeen='Private';
+        }
+        if(result[0].PrivacyStatus=='Restricted'){
+          online_status[i][j].LastSeen='Restricted';
+        }
+      }
+    }
+    console.log(online_status);
+
+    socket.emit('online_status', online_status);
+
     //list of messages in each conversation
     
     var query='select * from message';
@@ -221,6 +254,14 @@ io.on('connection', (socket) => {
     await asyncQuery(query);
   });
 
+  socket.on('retPrivacyStatus', async p_number => {
+    console.log(p_number);
+    var query=`select PrivacyStatus from settings where USER_MobileNumber=${p_number};`;
+    var result= await asyncQuery(query);
+    console.log(result);
+    socket.emit('privacyStatus', result);
+  });
+
 })
 
 async function getUsersOfConversation (c_no){
@@ -229,6 +270,8 @@ async function getUsersOfConversation (c_no){
   users_of_con=await asyncQuery(query);
   return users_of_con;
 }
+
+
 
 
 // app.use(express.static(path.join(__dirname, 'static')));

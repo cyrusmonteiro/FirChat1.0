@@ -18,6 +18,8 @@ var p_number;
 var profile_of_user;
 var currentPerson;
 var currentc_number;
+var privOfuser;
+var list_of_online_users=[];
 
 function showMessage(message) {
     const messageElement = document.createElement('li');
@@ -26,7 +28,7 @@ function showMessage(message) {
         messageElement.textContent = message.Message_body;
     else{
         messageElement.textContent = message.Message_body;
-        messageElement.style='text-align:left';
+        //messageElement.style='text-align:left';
     }
     messagesList.appendChild(messageElement);
     chatApp.scrollTo(0, chatApp.scrollHeight);
@@ -145,7 +147,7 @@ function profileHandler(event) {
 }
 
 function showProfile(profile) {
-    
+    socket.emit('retPrivacyStatus', profile[0].MobileNumber);
     profileElement.style.display = 'flex';
     profileElement.innerHTML = `
         <div class="profile-container">
@@ -156,6 +158,7 @@ function showProfile(profile) {
                 <div class="profile-name">Name: ${profile[0].Username}</div>
                 <div class="profile-number">Phone Number: ${profile[0].MobileNumber}</div>
                 <div class="profile-email">Status: ${profile[0].Status}</div>
+                <div class="Privacy-status">Privacy Status: ${privOfuser}</div>
                 <button onclick="openSettings(event)">Settings</button>
                 <br>
             </div>
@@ -166,6 +169,13 @@ function showProfile(profile) {
 
     //document.getElementById('maingrid').appendChild(profileElement);
 }
+
+
+socket.on('privacyStatus', privacyStatus => {
+    privOfuser=privacyStatus[0].PrivacyStatus;
+    console.log(privOfuser);
+});
+
 
 function openSettings(event) {
     event.preventDefault();
@@ -190,7 +200,7 @@ function updateSettings(event, status) {
 
 function closeProfile() {
     profileElement.style.display = 'none';
-    chatApp.style.display = 'grid';
+    chatApp.style.display = 'none';
 }
 
 // function showContactList() {
@@ -241,7 +251,8 @@ socket.on('group', group => {
             chatApp.style.display = 'grid';
             currentc_number=groupData[i].CONVERSATION_Conversation_ID;
             currentPerson=groupData[i].Name;
-            showX(groupData[i])
+            showX(groupData[i]);
+            console.log(list_of_online_users[i]);       //group status
         })
         contact.innerHTML = groupData[i].Name;
         
@@ -250,13 +261,16 @@ socket.on('group', group => {
 })
 
 
+
+
+
 function showX(arg) {
     console.log(arg);
     socket.emit('getMessageIDs', arg.CONVERSATION_Conversation_ID);
 }
 
 socket.on('m', m => {
-    console.log(m);
+    //console.log(m);
     messages=[];
     messages.push(...m);
     //m.forEach(showMessage);
@@ -271,9 +285,13 @@ socket.on('messageIDs', messageIDs => {
     for(let i=0; i<messageIDs.length; i++){
         for(let j=0; j<messages.length; j++){
             if(messages[j].Message_ID==messageIDs[i].MESSAGE_Message_ID){
-                console.log(messages[j]);
+                //console.log(messages[j]);
                 showMessage(messages[j]);
             }
         }
     }
+});
+
+socket.on('online_status', online_status => {
+    list_of_online_users=online_status;
 });
