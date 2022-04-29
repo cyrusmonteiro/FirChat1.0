@@ -262,6 +262,35 @@ io.on('connection', (socket) => {
     socket.emit('privacyStatus', result);
   });
 
+  socket.on('search', async (search,p_number) => {
+    console.log(search);
+    var query=`SELECT whatsapp3.message.MESSAGE_ID,
+    whatsapp3.message.Message_body,
+    whatsapp3.sends.Conversation_Conversation_ID
+    FROM whatsapp3.sends INNER JOIN whatsapp3.message ON message.MESSAGE_ID = sends.MESSAGE_MESSAGE_ID
+    WHERE (Message_body REGEXP '${search}' 
+    AND
+    CONVERSATION_Conversation_ID IN 
+    (SELECT Conversation_Conversation_ID 
+    FROM whatsapp3.user_ismember_conversation
+    WHERE USER_MobileNumber = ${p_number}));`;
+    var result= await asyncQuery(query);
+    console.log(result);
+    socket.emit('search', result);
+  });
+
+  socket.on('getSender', async (mID) => {
+    var query = `SELECT UserName FROM user
+    USE INDEX(userIndex)
+    WHERE MobileNumber = (SELECT User_MobileNumber FROM sends 
+    USE INDEX(sendIndex)
+    WHERE Message_Message_ID = ${mID});`;
+    var result = await asyncQuery(query);
+    console.log(result);
+    socket.emit('getSender', result,mID);
+
+  });
+
 })
 
 async function getUsersOfConversation (c_no){

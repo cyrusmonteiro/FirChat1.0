@@ -14,12 +14,20 @@
     <div id="maingrid">
 
       <!-- profile -->
+      
       <div id="prof" style=" display: none">
       </div> 
 
+      <div id="compose" style=" display: none">
+      </div>
+
       <!-- contacts -->
       <div id="contacts">
+        <form id="search" action="">
+          <input id="search-input" autocomplete="off" /><button id="search-button">Search</button>
+        </form>
         <button id="profile" onclick="profileHandler(event)">My Profile</button>
+        <button id="compose" onclick="composeHandler(event)">Compose</button>
       </div>
 
 
@@ -32,8 +40,6 @@
         <form id="login-form" onsubmit="loginHandler(event)">
           <label for="p_number">PhoneNumber</label>
           <input name="p_number" type="text"/> <br>
-          <label for="password">Password</label>
-          <input name="password" type="password"/>
           <input type="submit" value="Login"/>
         </form>
         <form id="register-form" onsubmit="registerHandler(event)">
@@ -41,8 +47,6 @@
           <input name="username" type="text"/> <br>
           <label for="p_number">PhoneNumber</label>
           <input name="p_number" type="text"/> <br>
-          <label for="password">Password</label>
-          <input name="password" type="password"/>
           <label for="status">Status</label>
           <input name="status" type="text"/> <br>
           <input type="submit" value="Register"/>

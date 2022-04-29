@@ -6,9 +6,12 @@ const registerForm = document.getElementById('register-form');
 const entryButtons = document.getElementById('entryButtons');
 const loginGrid=document.getElementById('login-grid');
 const input = document.getElementById('input');
+const search_input = document.getElementById('search-input');
 const messagesList = document.getElementById('messages');
 const contactList = document.getElementById('contacts');
 const profileElement = document.getElementById('prof');
+const composeElement = document.getElementById('compose');
+const searchbar = document.getElementById('search');
 
 var messages = [];
 var listOfContacts = [];
@@ -20,16 +23,21 @@ var currentPerson;
 var currentc_number;
 var privOfuser;
 var list_of_online_users=[];
+var currentSender=[];
 
-function showMessage(message) {
+async function showMessage(message) {
     const messageElement = document.createElement('li');
-    
-    if(message.Message_ID==-1)
-        messageElement.textContent = message.Message_body;
-    else{
-        messageElement.textContent = message.Message_body;
-        //messageElement.style='text-align:left';
+    await new Promise(resolve => setTimeout(() => resolve(), 800));
+    //console.log(currentSender);
+    //console.log(message);
+    for(var i=0;i<currentSender.length;i++){
+        //console.log(15);
+        if(currentSender[i].MessageID==message.Message_ID){
+            console.log(15)
+            messageElement.textContent = currentSender[i].UserName;
+        }
     }
+    messageElement.textContent += `:`+message.Message_body;
     messagesList.appendChild(messageElement);
     chatApp.scrollTo(0, chatApp.scrollHeight);
 }
@@ -37,7 +45,7 @@ function showMessage(message) {
 chatForm.addEventListener('submit', (event) => {
     event.preventDefault();
 
-    if(input.vali!=''){
+    //if(input.value!=''){
         const messageObject = {
             Message_ID: '-1',
             Message_body: input.value,
@@ -50,9 +58,19 @@ chatForm.addEventListener('submit', (event) => {
         messages.push(messageObject);
         showMessage(messageObject);
         input.value = '';
-    }
+    //}
     
 })
+searchbar.addEventListener('submit', (event) => {
+    event.preventDefault();
+    console.log(search_input.value);
+    socket.emit('search',search_input.value,p_number);
+    
+})
+
+socket.on('search', (data) => {
+    console.log(data);
+});
 
 
 socket.on('chat message', (messageObject) => {
@@ -144,6 +162,23 @@ socket.on('profile', profile => {
 function profileHandler(event) {
     event.preventDefault();
     showProfile(profile_of_user);
+}
+
+function composeHandler(event) {
+    event.preventDefault();
+    //show alert
+    composeElement.style.display = 'block';
+    chatApp.style.display = 'none';
+    composeElement.innerHTML=`<form id="compose-form" onsubmit="sendMessage(event)">
+    <input type="text" name="num" placeholder="Reciever's number" > 
+    <input type="text" name="mess" placeholder="Type your message here" >
+    <button type="submit" onclick="messageSend(event)">Send</button>
+    </form>`;
+}
+
+function messageSend(event) {
+    event.preventDefault();
+    composeElement.style.display = 'none';
 }
 
 function showProfile(profile) {
@@ -282,14 +317,23 @@ socket.on('messageIDs', messageIDs => {
     messageIDs.sort(function(a,b){return new Date(a.MESSAGE_Message_ID) - new Date(b.MESSAGE_Message_ID)});
     //messageIDs.sort();
     console.log(messageIDs);
+    //console.log(currentSender)
     for(let i=0; i<messageIDs.length; i++){
         for(let j=0; j<messages.length; j++){
             if(messages[j].Message_ID==messageIDs[i].MESSAGE_Message_ID){
-                //console.log(messages[j]);
+                socket.emit('getSender', messages[j].Message_ID);
+
+               //console.log(messages[j]);
                 showMessage(messages[j]);
             }
         }
     }
+});
+
+socket.on('getSender', (sender,mID) => {
+    sender[0].MessageID=mID;
+    currentSender.push(sender[0]);
+    //console.log(currentSender);
 });
 
 socket.on('online_status', online_status => {

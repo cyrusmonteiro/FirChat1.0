@@ -42,7 +42,7 @@ body {
 }
 
 #messages {
-    text-align: right;
+    /* //text-align: right; */
     list-style-type: none;
     margin: 0;
     padding: 0;
