@@ -1,0 +1,176 @@
+Documentation.
+
+Previous feedback-
+Weak identity not represeted correctly.
+We had failed to use a double diamond to represent our weak entity relationship.
+We have updated that and now our weak entities are more clearly defined.
+
+Views and Grants-
+
+GRANTS
+CREATE ROLE whatsapp2admin@localhost, whatsapp2user@localhost;
+GRANT ALL ON whatsapp2.* TO whatsapp2admin@localhost;
+GRANT SELECT, INSERT, DELETE on whatsapp2.message TO whatsapp2user@localhost;
+GRANT SELECT, INSERT, UPDATE, DELETE on whatsapp2.user TO whatsapp2user@localhost;
+GRANT SELECT, INSERT, UPDATE, DELETE on whatsapp2.sends TO whatsapp2user@localhost;
+GRANT SELECT, INSERT, UPDATE, DELETE on whatsapp2.group_ TO whatsapp2user@localhost;
+
+
+The following views can be made accessible to all the users individually. Currently, we have made them accessible to single cases.
+This would ensure the others users do not have access to others’ chats or other vital information, and they use it for malicious purposes.
+
+    View → All groups/chats for a particular user
+    CREATE VIEW all_chat_for_users AS 
+    SELECT * FROM whatsapp2.group_ USE INDEX(groupIndex)
+    WHERE CONVERSATION_Conversation_ID IN (SELECT CONVERSATION_Conversation_ID FROM whatsapp2.user_ismember_conversation
+    WHERE USER_MobileNumber = 9899326396);
+
+
+    View → All group members(names) of a particular group name
+    CREATE VIEW all_member_of_group AS 
+    SELECT USER_MobileNumber FROM whatsapp2.user_ismember_conversation USE INDEX(userismemberIndex)
+    WHERE CONVERSATION_Conversation_ID = 8;
+
+
+
+    View → All the messages user has access to
+    CREATE VIEW all_messages AS 
+    SELECT whatsapp2.message.MESSAGE_ID,
+        whatsapp2.message.Message_body,
+        whatsapp2.sends.Conversation_Conversation_ID
+    FROM whatsapp2.sends USE INDEX(SendIndex) INNER JOIN whatsapp2.message ON message.MESSAGE_ID = sends.MESSAGE_MESSAGE_ID
+    WHERE (Message_body REGEXP 'iusto' 
+    AND
+    CONVERSATION_Conversation_ID IN 
+    (SELECT Conversation_Conversation_ID 
+    FROM Whatsapp2.user_ismember_conversation
+    WHERE USER_MobileNumber = 2902837019));
+
+    View -> Messages in each chat
+    CREATE VIEW all_messages_in_chat AS 
+    SELECT * FROM whatsapp2.sends USE INDEX(sendIndex)
+    INNER JOIN whatsapp2.message on message.message_ID= sends.message_Message_ID
+    where CONVERSATION_Conversation_ID = 100;
+
+
+SQL Queries-
+In this doc is a list of most of the queries we used. It gives an oversight of how our backend server extracts data from the sql database and provides it to the frontend.
+https://docs.google.com/document/d/1NLpX6uNEdNcgHlINahiDu7e2Dp6nTkbNWiDMBLm9HW4/edit?usp=sharing 
+
+
+Embedded SQL Queries-
+Following are few of the embedded queries we used in our application:
+
+    -Searching for a message
+    SELECT whatsapp2.message.MESSAGE_ID,
+        whatsapp2.message.Message_body,
+        whatsapp2.sends.Conversation_Conversation_ID
+    FROM whatsapp2.sends USE INDEX(messageIndex) INNER JOIN whatsapp2.message ON message.MESSAGE_ID = sends.MESSAGE_MESSAGE_ID
+    WHERE (Message_body REGEXP 'iusto' 
+    AND
+    CONVERSATION_Conversation_ID IN 
+    (SELECT Conversation_Conversation_ID 
+    FROM Whatsapp2.user_ismember_conversation
+    WHERE USER_MobileNumber = 2902837019));
+
+    -View all groups given a particular conversation id and phone number
+    SELECT * FROM whatsapp2.group_ USE INDEX(groupIndex)
+    WHERE CONVERSATION_Conversation_ID = (SELECT CONVERSATION_Conversation_ID FROM whatsapp2.user_ismember_conversation
+    WHERE USER_MobileNumber = 1419076897);
+
+    - Updating send table after sending message 
+    INSERT INTO whatsapp2.sends(`sentTime`, `User_MobileNumber`, `message_Message_Id`, `Conversation_Conversation_ID`)
+    VALUES(current_timestamp(), '9899326396', (SELECT message_id FROM whatsapp2.message ORDER BY Message_ID DESC LIMIT 1), 100);
+
+    - Check sender of message
+    SELECT UserName FROM user USE INDEX(userIndex)
+    USE INDEX(userIndex)
+    WHERE MobileNumber = (SELECT User_MobileNumber FROM sends 
+    USE INDEX(sendIndex)
+    WHERE Message_Message_ID = 69);
+
+    - Creation of triggers
+    Insert_user_status
+    AFTER INSERT
+    ON whatsapp2.user FOR EACH ROW
+    INSERT INTO whatsapp2.user_status(`OnlineStatus`, `LastSeen`, `USER_MobileNumber`) 
+    VALUES ('1', current_timestamp(), (SELECT New.MobileNumber FROM whatsapp2.user limit 1));
+
+
+Optimization of queries - 
+We optimised the code by doing the following:
+-Wrote clean code with minimum number of subqueries/searches 
+-The functional division of query returns by using Socket.io
+-Used Index Tables (Above screenshot is about the same query being run without and with Indexing)
+-Use of Triggers to solve the problems of sending individual queries from frontend.
+
+
+Indexing - 
+    CREATE INDEX userIndex
+    ON user (mobileNumber, userName);
+
+    CREATE INDEX sendIndex 
+    ON sends(User_MobileNumber, Message_Message_ID, Conversation_Conversation_ID);
+
+    CREATE INDEX userismemberIndex
+    ON user_ismember_conversation (user_mobileNumber, Conversation_Conversation_ID);
+
+    CREATE INDEX groupIndex
+    ON group_(`Group_ID`);
+
+We used Index tables in all the possible tables where the number of entries could go high/ the ones frequently used.
+
+
+
+Triggers - 
+Triggers have been used to solve the problems of sending individual queries from frontend. They have been used to optimize queries for best performance query result returns.
+
+    New User
+    Add Status
+    CREATE TRIGGER Insert_user_status AFTER INSERT
+    ON whatsapp2.user FOR EACH ROW
+    INSERT INTO whatsapp2.user_status(`OnlineStatus`, `LastSeen`, `USER_MobileNumber`) 
+    VALUES ('1', current_timestamp(), (SELECT New.MobileNumber FROM whatsapp2.user limit 1));
+
+    Add Setting
+    CREATE TRIGGER Insert_user_settings AFTER INSERT
+    ON whatsapp2.user FOR EACH ROW
+    INSERT INTO whatsapp2.settings(`PrivacyStatus`, `USER_MobileNumber`)
+    VALUES ('NORMAL', (SELECT New.MobileNumber FROM whatsapp2.user limit 1));
+
+
+
+Deployment Instructions - 
+The application currently has to be locally hosted. 
+Navigate to the backend folder and run the following command:
+    yarn dev
+
+Once the terminal says connected, open your browser and go to localhost:3001
+Here we have our locally hosted application.
+
+Sample Login: 
+    Login using the phone number 8750490250 or 9899326396
+    Here we can see 2 chats in the contact list, the first is a group of multiple members called Alesia and second a 1 to one chat with each other called individual chat.
+
+Some features of the application:
+    -One to one chatting using socket.to of socket.io
+        whenever a user logs in, he is connected to the server thorugh a socket and gets a socket.io connection.
+    -Group chatting using socket.to of socket.io using the concept of rooms
+        here we put multiple users into a room and then emit backened data to the room
+    -Online status, using socket.io connection
+        on every socket connection we get the user's phonenumber, mark him as online and update the last seen time
+        on every socket disconnection we mark the user as offline
+    -Searching for a message
+        we can search for a message using the search bar. We emit what we've searched to the backend and emit back the data based on a search through the database
+    -Setting privacy status
+        we can set the privacy status of a user to either public or private or restricted and their online status and last seen will be shown to other users accordingly
+    -Register
+        we can register a new user using the registration form and get a new user's socket.io connection
+    
+We've continuously mentioned socket.io in the documentation.
+    Socket.IO is a library that enables low-latency, bidirectional and event-based communication between a client and a server.
+    It is built on top of the WebSocket protocol and provides additional guarantees like fallback to HTTP long-polling or automatic reconnection.
+    W'ere using socket.io in our application, we use it to connect to the backend server though java script
+
+
+On our front end we are using vanilla html,css and js to provide the bare essential functionality of the application. Some outputs are visible in the browser console.
