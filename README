@@ -1,0 +1,12 @@
+This project aims to develop a very basic Whatsapp-like
+Chat messenger system,
+
+"FirChat" A database is
+created where Users can communicate One-To-One or in a
+Group chat. This database attempts to mimic any existing
+chat application which allows chatting to one user as
+DM or multiple users as Group Message.
+
+The deployement instructions are present in the Documentation.
+
+This is a first attempt at learning about Sockets, Javascript and web-development in general.
